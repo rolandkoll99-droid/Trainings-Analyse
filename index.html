@@ -1,504 +1,1399 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESV Grein - Zuschauer-Monitor</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: linear-gradient(135deg, #0d1f13, #17351f);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .viewer-container {
-            background: white;
-            border-radius: 30px;
-            padding: 25px;
-            max-width: 800px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .header h1 {
-            color: #1f5e3a;
-            font-size: 1.8rem;
-        }
-        .header .subtitle {
-            color: #666;
-            font-size: 0.9rem;
-        }
-        .live-badge {
-            display: inline-block;
-            background: #ff4444;
-            color: white;
-            padding: 3px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            animation: blink 1s infinite;
-            margin-left: 10px;
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-        .scoreboard {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .score-card {
-            background: #f7faf5;
-            border-radius: 18px;
-            padding: 15px;
-            text-align: center;
-            border-bottom: 8px solid #1f5e3a;
-        }
-        .score-card.red {
-            border-bottom-color: #b93a32;
-        }
-        .team-name {
-            font-size: 1.1rem;
-            font-weight: 900;
-        }
-        .team-score {
-            font-size: 3.5rem;
-            font-weight: 900;
-            color: #1f5e3a;
-        }
-        .score-card.red .team-score {
-            color: #b93a32;
-        }
-        .team-wins {
-            background: #102417;
-            color: white;
-            padding: 4px 14px;
-            border-radius: 10px;
-            display: inline-block;
-            margin-top: 8px;
-            font-size: 1rem;
-        }
-        .kehren-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        .kehren-column {
-            background: #f0f5ee;
-            border-radius: 15px;
-            padding: 12px;
-        }
-        .kehren-title {
-            text-align: center;
-            font-weight: 900;
-            margin-bottom: 8px;
-            color: #1f5e3a;
-            font-size: 0.9rem;
-        }
-        .kehre-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 10px;
-            background: white;
-            margin-bottom: 4px;
-            border-radius: 6px;
-            border: 2px solid #d7e4cf;
-            font-size: 0.9rem;
-        }
-        .kehre-row.active {
-            border-color: #4caf50;
-            background: #f3fff2;
-        }
-        .kehre-number {
-            font-weight: 700;
-            color: #555;
-        }
-        .kehre-points {
-            font-weight: 900;
-            font-size: 1rem;
-        }
-        .status {
-            text-align: center;
-            margin-top: 15px;
-            padding: 12px;
-            background: #fff8e1;
-            border-radius: 12px;
-            font-weight: 700;
-            color: #e65100;
-        }
-        .status.winner {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 15px;
-            color: #999;
-            font-size: 0.75rem;
-        }
-        .update-info {
-            text-align: center;
-            color: #999;
-            font-size: 0.7rem;
-            margin-top: 5px;
-        }
-        .data-input-area {
-            margin-top: 15px;
-            padding: 15px;
-            background: #f5f5f5;
-            border-radius: 12px;
-            border: 2px dashed #ccc;
-        }
-        .data-input-area textarea {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 0.8rem;
-            min-height: 80px;
-            resize: vertical;
-        }
-        .data-input-area .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-        .data-input-area button {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.1s;
-            min-width: 100px;
-        }
-        .data-input-area button:active {
-            transform: scale(0.95);
-        }
-        .btn-update {
-            background: #1f5e3a;
-            color: white;
-        }
-        .btn-paste {
-            background: #2196F3;
-            color: white;
-        }
-        .btn-clear {
-            background: #f44336;
-            color: white;
-        }
-        .btn-demo {
-            background: #ff9800;
-            color: white;
-        }
-        .offline-note {
-            background: #ffebee;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-            text-align: center;
-            color: #c62828;
-            display: none;
-        }
-        @media (max-width: 600px) {
-            .scoreboard {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-            .kehren-grid {
-                grid-template-columns: 1fr;
-            }
-            .team-score {
-                font-size: 2.8rem;
-            }
-            .viewer-container {
-                padding: 15px;
-            }
-            .header h1 {
-                font-size: 1.4rem;
-            }
-            .data-input-area textarea {
-                min-height: 60px;
-                font-size: 0.7rem;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Stockschießen Trainingsanalyse</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, 'Segoe UI', Roboto, system-ui, sans-serif;
+      margin: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+      background: #f0f4fa;
+      min-height: 100vh;
+      padding: 0.8rem;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    
+    .card {
+      max-width: 700px;
+      width: 100%;
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 8px 30px rgba(0, 20, 40, 0.12);
+      padding: 1.2rem 1.2rem 1.8rem;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #0b2b44;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 2px solid #e8eff5;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    
+    h1 small {
+      font-size: 0.7rem;
+      font-weight: 400;
+      color: #3e6a8c;
+      background: #eef3fa;
+      padding: 0.2rem 0.8rem;
+      border-radius: 30px;
+      white-space: nowrap;
+    }
+    
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      margin-bottom: 0.9rem;
+    }
+    
+    .field-group label {
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: #1f4a6e;
+    }
+    
+    .field-group input,
+    .field-group select,
+    .field-group textarea {
+      background: #f8fafc;
+      border: 1.5px solid #dce5ef;
+      border-radius: 14px;
+      padding: 0.7rem 0.9rem;
+      font-size: 0.95rem;
+      transition: 0.15s;
+      width: 100%;
+      outline: none;
+      color: #0a1e2f;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    
+    .field-group input:focus,
+    .field-group select:focus,
+    .field-group textarea:focus {
+      border-color: #2a7bb0;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(42, 123, 176, 0.1);
+    }
+    
+    .field-group select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234a6f8f' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      padding-right: 2.5rem;
+    }
+    
+    .field-group textarea {
+      resize: vertical;
+      min-height: 60px;
+      font-family: inherit;
+    }
+    
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.7rem 0.9rem;
+    }
+    
+    .section-title {
+      font-weight: 600;
+      color: #1a4b6e;
+      font-size: 0.85rem;
+      margin: 1.2rem 0 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-top: 1px solid #e8eff5;
+      padding-top: 1rem;
+    }
+    
+    .section-title:first-of-type {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0.5rem;
+    }
+    
+    .kehre-grid {
+      display: grid;
+      grid-template-columns: 55px 1fr 1fr 1fr;
+      gap: 0.3rem;
+      background: #f5f9fe;
+      padding: 0.6rem;
+      border-radius: 18px;
+      margin: 0.3rem 0;
+    }
+    
+    .kehre-header {
+      font-weight: 700;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      color: #1f4a6e;
+      padding: 0.2rem 0.2rem;
+      text-align: center;
+    }
+    
+    .kehre-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      background: white;
+      border-radius: 10px;
+      padding: 0.2rem 0.2rem;
+      border: 1px solid #dce5ef;
+    }
+    
+    .kehre-item .kehre-label {
+      font-weight: 600;
+      font-size: 0.75rem;
+      color: #0a2b44;
+      min-width: 30px;
+      text-align: center;
+    }
+    
+    .btn-kehre {
+      background: #e8eff5;
+      border: none;
+      border-radius: 30px;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.1s;
+      min-width: 30px;
+      min-height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+    
+    .btn-kehre:active {
+      transform: scale(0.9);
+    }
+    
+    .btn-kehre.green {
+      background: #d4edda;
+      color: #155724;
+    }
+    .btn-kehre.green.active {
+      background: #28a745;
+      color: white;
+      box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+    }
+    
+    .btn-kehre.blue {
+      background: #cce5ff;
+      color: #004085;
+    }
+    .btn-kehre.blue.active {
+      background: #007bff;
+      color: white;
+      box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+    }
+    
+    .btn-kehre.red {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .btn-kehre.red.active {
+      background: #dc3545;
+      color: white;
+      box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+    }
+    
+    .spiel-auswahl {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 0.5rem 0;
+    }
+    
+    .spiel-auswahl select {
+      flex: 1;
+      min-width: 80px;
+      padding: 0.5rem 0.8rem;
+      border-radius: 14px;
+      border: 1.5px solid #dce5ef;
+      background: #f8fafc;
+      font-size: 0.9rem;
+    }
+    
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 1.2rem 0 1rem;
+    }
+    
+    .btn {
+      flex: 1;
+      min-width: 65px;
+      background: white;
+      border: 1.5px solid #d0dceb;
+      padding: 0.6rem 0.6rem;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.7rem;
+      color: #1f4a6e;
+      cursor: pointer;
+      transition: all 0.12s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      background: #f7faff;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      text-align: center;
+    }
+    
+    .btn:active {
+      transform: scale(0.96);
+    }
+    
+    .btn-primary {
+      background: #1a5f8b;
+      border-color: #1a5f8b;
+      color: white;
+      box-shadow: 0 3px 10px -3px rgba(26, 95, 139, 0.3);
+    }
+    .btn-primary:active {
+      background: #0f4a70;
+    }
+    
+    .btn-success {
+      background: #2a8b5f;
+      border-color: #2a8b5f;
+      color: white;
+      box-shadow: 0 3px 10px -3px rgba(42, 139, 95, 0.3);
+    }
+    .btn-success:active {
+      background: #1f704c;
+    }
+    
+    .btn-pdf {
+      background: #d43f34;
+      border-color: #d43f34;
+      color: white;
+      box-shadow: 0 3px 10px -3px rgba(212, 63, 52, 0.3);
+    }
+    .btn-pdf:active {
+      background: #b8322a;
+    }
+    
+    .btn-outline {
+      background: transparent;
+      border-color: #c5d5e6;
+    }
+    .btn-outline:active {
+      background: #e5edf5;
+    }
+    
+    .btn-danger {
+      border-color: #dbb5b5;
+      color: #a55353;
+      background: #fff6f6;
+    }
+    .btn-danger:active {
+      background: #fce8e8;
+    }
+    
+    .btn-sm {
+      flex: 0 1 auto;
+      padding: 0.35rem 0.7rem;
+      font-size: 0.65rem;
+    }
+    
+    .btn-file {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-file input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    
+    .analyse-output {
+      background: #f0f6fe;
+      border-radius: 20px;
+      padding: 1rem 1rem;
+      margin-top: 0.8rem;
+      border: 1px solid #e0eaf3;
+    }
+    
+    .analyse-output h3 {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #0b2b44;
+      margin-bottom: 0.8rem;
+    }
+    
+    .info-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem 1rem;
+      margin-bottom: 0.6rem;
+      font-size: 0.8rem;
+    }
+    .info-row strong {
+      color: #0a2b44;
+    }
+    .info-row .label-text {
+      font-weight: 300;
+      color: #2d5d82;
+      font-size: 0.6rem;
+      display: block;
+    }
+    
+    .note-preview {
+      background: #eaf1fa;
+      padding: 0.4rem 0.8rem;
+      border-radius: 30px;
+      font-size: 0.8rem;
+      color: #1b405b;
+      display: inline-block;
+      margin-top: 0.2rem;
+      max-width: 100%;
+      word-break: break-word;
+    }
+    
+    hr {
+      margin: 0.8rem 0 0.5rem;
+      border: none;
+      border-top: 1.5px dashed #d8e3ef;
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #1f4a6e;
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+      opacity: 0;
+      transition: all 0.35s ease;
+      z-index: 999;
+      max-width: 90%;
+      text-align: center;
+      pointer-events: none;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    .toast.success { background: #2a8b5f; }
+    .toast.error { background: #b34444; }
+    .toast.info { background: #2a7bb0; }
+    
+    .game-overview {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0.3rem;
+      margin: 0.5rem 0;
+    }
+    
+    .game-box {
+      background: white;
+      border-radius: 8px;
+      padding: 0.3rem 0.2rem;
+      border: 2px solid #dce5ef;
+      text-align: center;
+      font-size: 0.6rem;
+    }
+    
+    .game-box.active {
+      border-color: #28a745;
+      background: #f0fff4;
+    }
+    
+    .game-box.completed {
+      border-color: #ffc107;
+      background: #fff8e1;
+    }
+    
+    .game-box .game-label {
+      font-weight: 700;
+      font-size: 0.6rem;
+      color: #1f4a6e;
+    }
+    
+    .game-box .game-stats {
+      font-size: 0.5rem;
+      color: #4a6f8f;
+    }
+    
+    .game-box .game-rate {
+      font-weight: 700;
+      font-size: 0.7rem;
+      color: #0a2b44;
+    }
+    
+    .game-box .game-status {
+      font-size: 0.45rem;
+      color: #6c8ba8;
+    }
+    
+    .total-stats {
+      background: white;
+      border-radius: 12px;
+      padding: 0.6rem;
+      margin: 0.5rem 0;
+      border: 2px solid #1a5f8b;
+      background: #f8fbff;
+    }
+    
+    .total-stats .total-title {
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: #1f4a6e;
+      text-align: center;
+      margin-bottom: 0.3rem;
+    }
+    
+    .total-stats .total-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 0.3rem;
+      text-align: center;
+      font-size: 0.7rem;
+    }
+    
+    .total-stats .total-item {
+      background: #f0f6fe;
+      border-radius: 8px;
+      padding: 0.3rem;
+    }
+    
+    .total-stats .total-item .num {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #0a2b44;
+    }
+    
+    .total-stats .total-item .desc {
+      font-size: 0.55rem;
+      color: #3f6b8e;
+      text-transform: uppercase;
+    }
+    
+    .total-stats .total-item.highlight-green .num { color: #28a745; }
+    .total-stats .total-item.highlight-blue .num { color: #007bff; }
+    .total-stats .total-item.highlight-red .num { color: #dc3545; }
+    .total-stats .total-item.highlight-gold .num { color: #d4a017; }
+    
+    .export-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin: 0.5rem 0 0.3rem;
+    }
+    
+    .export-buttons .btn {
+      flex: 0 1 auto;
+      min-width: 80px;
+    }
+    
+    @media (max-width: 600px) {
+      .game-overview {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+    
+    @media (max-width: 550px) {
+      .kehre-grid {
+        grid-template-columns: 45px 1fr 1fr 1fr;
+        gap: 0.2rem;
+        padding: 0.4rem;
+      }
+      .btn-kehre {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.3rem;
+        min-width: 26px;
+        min-height: 26px;
+      }
+      .total-stats .total-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    
+    @media (max-width: 450px) {
+      .game-overview {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    
+    @media (max-width: 400px) {
+      .kehre-grid {
+        grid-template-columns: 38px 1fr 1fr 1fr;
+        gap: 0.15rem;
+        padding: 0.3rem;
+      }
+      .btn-kehre {
+        font-size: 0.6rem;
+        padding: 0.1rem 0.2rem;
+        min-width: 22px;
+        min-height: 22px;
+      }
+      .total-stats .total-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .game-overview {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    
+    @media print {
+      body { background: white; padding: 0.2rem; }
+      .card { box-shadow: none; padding: 0.5rem; max-width: 100%; }
+      .btn, .btn-group, .export-buttons { display: none !important; }
+      .analyse-output { background: white; border: 1px solid #ccc; }
+      .note-preview { background: #f5f5f5; }
+      .toast { display: none !important; }
+      h1 small { display: none !important; }
+      .kehre-grid { background: #f5f5f5; }
+      .kehre-item { background: white; }
+      .game-box.active { border-color: #333; background: #f5f5f5; }
+      .game-box.completed { border-color: #999; background: #f9f9f9; }
+      .total-stats { border-color: #333; background: #f5f5f5; }
+    }
+  </style>
 </head>
 <body>
-    <div class="viewer-container">
-        <div class="header">
-            <h1>🥌 ESV Grein Training <span class="live-badge">LIVE</span></h1>
-            <p class="subtitle">Zuschauer-Monitor • Version 2.0</p>
-        </div>
 
-        <div class="scoreboard">
-            <div class="score-card">
-                <div class="team-name">⚪ Mannschaft W</div>
-                <div class="team-score" id="scoreA">0</div>
-                <div class="team-wins">🏆 <span id="winsA">0</span></div>
-            </div>
-            <div class="score-card red">
-                <div class="team-name">🔴 Mannschaft E</div>
-                <div class="team-score" id="scoreB">0</div>
-                <div class="team-wins">🏆 <span id="winsB">0</span></div>
-            </div>
-        </div>
+<div class="card" id="app">
+  <h1>
+    🥌 Stockschießen
+    <small>Trainingsanalyse</small>
+  </h1>
 
-        <div class="kehren-grid">
-            <div class="kehren-column">
-                <div class="kehren-title">⚪ Mannschaft W</div>
-                <div id="kehrenA"></div>
-            </div>
-            <div class="kehren-column">
-                <div class="kehren-title">🔴 Mannschaft E</div>
-                <div id="kehrenB"></div>
-            </div>
-        </div>
-
-        <div class="status" id="status">⏳ Warte auf Spielstart...</div>
-        <div class="offline-note" id="offlineNote">
-            ⚠️ Verbindung zum Hauptgerät verloren
-        </div>
-        
-        <!-- Daten-Eingabebereich für manuelle Updates -->
-        <div class="data-input-area">
-            <p style="font-weight:700;color:#333;margin-bottom:8px;">📊 Daten aktualisieren</p>
-            <textarea id="jsonInput" placeholder="Fügen Sie hier die JSON-Daten ein..."></textarea>
-            <div class="button-group">
-                <button class="btn-paste" onclick="pasteFromClipboard()">📋 Einfügen</button>
-                <button class="btn-update" onclick="updateFromJson()">🔄 Aktualisieren</button>
-                <button class="btn-demo" onclick="loadDemoData()">📊 Demo</button>
-                <button class="btn-clear" onclick="clearData()">🗑️ Leeren</button>
-            </div>
-            <p style="font-size:0.7rem;color:#999;margin-top:5px;">
-                Tipp: Kopieren Sie die JSON-Daten vom Hauptgerät und fügen Sie sie hier ein
-            </p>
-        </div>
-        
-        <div class="update-info" id="updateInfo">Letzte Aktualisierung: -</div>
-        <div class="footer">ESV Grein • Zuschauer-Monitor • GitHub Pages</div>
+  <!-- Basis-Daten -->
+  <div class="grid-2">
+    <div class="field-group">
+      <label>👤 Name</label>
+      <input type="text" id="playerName" placeholder="Name" value="Roland Koll">
     </div>
+    <div class="field-group">
+      <label>📅 Datum</label>
+      <input type="date" id="sessionDate" value="2026-07-20">
+    </div>
+    <div class="field-group">
+      <label>📍 Ort</label>
+      <input type="text" id="location" placeholder="Trainingsstätte" value="ESV Grein">
+    </div>
+    <div class="field-group">
+      <label>🌡️ Temperatur</label>
+      <input type="text" id="temperature" placeholder="z.B. 22°C" value="24°C">
+    </div>
+    <div class="field-group">
+      <label>Stockplatte</label>
+      <select id="racket">
+        <option value="Type 16/39/41/Glatt">Type 16/39/41/Glatt</option>
+        <option value="Type 16/39/41/Profil">Type 16/39/41/Profil</option>
+        <option value="Type 15L/43-46/Profil" selected>Type 15L/43-46/Profil</option>
+        <option value="Type 15M/47">Type 15M/47</option>
+        <option value="Type 14L/53/glatt">Type 14L/53/glatt</option>
+        <option value="Type 14M/54">Type 14M/54</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label>Stiel Länge/Grifform</label>
+      <select id="gameType">
+        <option value="20/A">20/A</option>
+        <option value="21/A">21/A</option>
+        <option value="22/A" selected>22/A</option>
+        <option value="23/A">23/A</option>
+        <option value="22/B">22/B</option>
+      </select>
+    </div>
+  </div>
 
-    <script>
-        // ===== STATE =====
-        let currentData = null;
-        let updateCount = 0;
-        let autoUpdateInterval = null;
+  <!-- Spiel Auswahl (1-12) -->
+  <div class="section-title">Spielauswahl (1-12)</div>
+  <div class="spiel-auswahl">
+    <label style="font-weight:600; font-size:0.8rem; color:#1f4a6e;">Spiel:</label>
+    <select id="gameSelect">
+      <option value="1" selected>Spiel 01</option>
+      <option value="2">Spiel 02</option>
+      <option value="3">Spiel 03</option>
+      <option value="4">Spiel 04</option>
+      <option value="5">Spiel 05</option>
+      <option value="6">Spiel 06</option>
+      <option value="7">Spiel 07</option>
+      <option value="8">Spiel 08</option>
+      <option value="9">Spiel 09</option>
+      <option value="10">Spiel 10</option>
+      <option value="11">Spiel 11</option>
+      <option value="12">Spiel 12</option>
+    </select>
+    <button class="btn btn-primary btn-sm" id="newGameBtn">🔄 Neues Spiel</button>
+    <button class="btn btn-success btn-sm" id="completeGameBtn">✅ Spiel beenden</button>
+  </div>
 
-        // ===== URL-Parameter für Auto-Update =====
-        const urlParams = new URLSearchParams(window.location.search);
-        const autoUpdate = urlParams.get('auto') === 'true';
-        const dataUrl = urlParams.get('data');
+  <!-- 6 Kehren pro Spiel -->
+  <div class="section-title">🔄 Kehren 1-6</div>
+  <div class="kehre-grid">
+    <div></div>
+    <div class="kehre-header">Maß</div>
+    <div class="kehre-header">Stock</div>
+    <div class="kehre-header">Fehl</div>
+    
+    <!-- Kehre 1 -->
+    <div class="kehre-item"><span class="kehre-label">K1</span></div>
+    <div class="kehre-item"><button class="btn-kehre green" id="mass1" data-kehre="1">✓</button></div>
+    <div class="kehre-item"><button class="btn-kehre blue" id="stock1" data-kehre="1">✓</button></div>
+    <div class="kehre-item"><button class="btn-kehre red" id="fehl1" data-kehre="1">✗</button></div>
+    
+    <!-- Kehre 2 -->
+    <div class="kehre-item"><span class="kehre-label">K2</span></div>
+    <div class="kehre-item"><button class="btn-kehre green" id="mass2" data-kehre="2">✓</button></div>
+    <div class="kehre-item"><button class="btn-kehre blue" id="stock2" data-kehre="2">✓</button></div>
+    <div class="kehre-item"><button class="btn-kehre red" id="fehl2" data-kehre="2">✗</button></div>
+    
+    <!-- Kehre 3 -->
+    <div class="kehre-item"><span class="kehre-label">K3</span></div>
+    <div class="kehre-item"><button class="btn-kehre green" id="mass3" data-kehre="3">✓</button></div>
+    <div class="kehre-item"><button class="btn-kehre blue" id="stock3" data-kehre="3">✓</button></div>
+    <div class="kehre-item"><button class="btn-kehre red" id="fehl3" data-kehre="3">✗</button></div>
+    
+    <!-- Kehre 4 -->
+    <div class="kehre-item"><span class="kehre-label">K4</span></div>
+    <div class="kehre-item"><button class="btn-kehre green" id="mass4" data-kehre="4">✓</button></div>
+    <div class="kehre-item"><button class="btn-kehre blue" id="stock4" data-kehre="4">✓</button></div>
+    <div class="kehre-item"><button class="btn-kehre red" id="fehl4" data-kehre="4">✗</button></div>
+    
+    <!-- Kehre 5 -->
+    <div class="kehre-item"><span class="kehre-label">K5</span></div>
+    <div class="kehre-item"><button class="btn-kehre green" id="mass5" data-kehre="5">✓</button></div>
+    <div class="kehre-item"><button class="btn-kehre blue" id="stock5" data-kehre="5">✓</button></div>
+    <div class="kehre-item"><button class="btn-kehre red" id="fehl5" data-kehre="5">✗</button></div>
+    
+    <!-- Kehre 6 -->
+    <div class="kehre-item"><span class="kehre-label">K6</span></div>
+    <div class="kehre-item"><button class="btn-kehre green" id="mass6" data-kehre="6">✓</button></div>
+    <div class="kehre-item"><button class="btn-kehre blue" id="stock6" data-kehre="6">✓</button></div>
+    <div class="kehre-item"><button class="btn-kehre red" id="fehl6" data-kehre="6">✗</button></div>
+  </div>
 
-        // ===== FUNKTIONEN =====
-        function updateDisplay(data) {
-            if (!data) return;
-            
-            currentData = data;
-            
-            // Scoreboard
-            document.getElementById('scoreA').textContent = data.scoreA || 0;
-            document.getElementById('scoreB').textContent = data.scoreB || 0;
-            document.getElementById('winsA').textContent = data.winsA || 0;
-            document.getElementById('winsB').textContent = data.winsB || 0;
+  <!-- Spiel-Übersicht (12 Spiele) -->
+  <div class="section-title">📊 Spielübersicht (1-12)</div>
+  <div class="game-overview" id="gameOverview"></div>
 
-            // Kehren
-            renderKehren('kehrenA', data.pointsA, data.activeKehre);
-            renderKehren('kehrenB', data.pointsB, data.activeKehre);
+  <!-- Anmerkungen -->
+  <div class="field-group" style="margin-top:0.5rem;">
+    <label>📝 Anmerkungen</label>
+    <textarea id="notes" placeholder="Besonderheiten, Gefühle, Schwerpunkte …">Guter Rhythmus, Vorhand stark, aber Rückhand zu passiv.</textarea>
+  </div>
 
-            // Status
-            const statusEl = document.getElementById('status');
-            if (data.winner) {
-                statusEl.textContent = `🏆 ${data.winner} gewinnt das Training!`;
-                statusEl.className = 'status winner';
-            } else if (data.activeKehre) {
-                statusEl.textContent = `🔄 Aktuelle Kehre: ${data.activeKehre}`;
-                statusEl.className = 'status';
-            } else {
-                statusEl.textContent = '⏳ Warte auf Spielstart...';
-                statusEl.className = 'status';
-            }
+  <!-- Analyse & Export -->
+  <div class="analyse-output" id="analyseOutput">
+    <h3>📋 Analyse</h3>
+    <div id="analysisContent"></div>
+    <div class="export-buttons" id="exportButtons">
+      <button class="btn btn-success" id="saveCsvBtn">💾 CSV Export</button>
+      <button class="btn btn-pdf" id="pdfExportBtn">📄 PDF Export</button>
+    </div>
+  </div>
 
-            // Update Info
-            document.getElementById('updateInfo').textContent = 
-                `Letzte Aktualisierung: ${new Date().toLocaleTimeString()} (${++updateCount}. Update)`;
-            
-            // Offline-Note ausblenden
-            document.getElementById('offlineNote').style.display = 'none';
+  <!-- Buttons (Lokal, Reset, Import) -->
+  <div class="btn-group">
+    <button class="btn btn-outline btn-sm" id="saveLocalBtn">💾 Lokal</button>
+    <button class="btn btn-outline btn-sm" id="resetBtn">↺ Reset</button>
+    <button class="btn btn-danger btn-sm" id="clearBtn">🧹 Leeren</button>
+    <button class="btn btn-outline btn-sm btn-file">
+      📂 Import
+      <input type="file" id="importBtn" accept=".csv,.json">
+    </button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script>
+  (function() {
+    // ========== DATENSTRUKTUR ==========
+    // 12 Spiele, je 6 Kehren
+    const MAX_GAMES = 12;
+    const MAX_KEHREN = 6;
+    let gameData = {};
+    let currentGame = 2;
+    let completedGames = new Set();
+    
+    // DOM-Elemente
+    const playerName = document.getElementById('playerName');
+    const sessionDate = document.getElementById('sessionDate');
+    const location = document.getElementById('location');
+    const temperature = document.getElementById('temperature');
+    const racket = document.getElementById('racket');
+    const gameType = document.getElementById('gameType');
+    const gameSelect = document.getElementById('gameSelect');
+    const notes = document.getElementById('notes');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const saveLocalBtn = document.getElementById('saveLocalBtn');
+    const saveCsvBtn = document.getElementById('saveCsvBtn');
+    const pdfExportBtn = document.getElementById('pdfExportBtn');
+    const importBtn = document.getElementById('importBtn');
+    const newGameBtn = document.getElementById('newGameBtn');
+    const completeGameBtn = document.getElementById('completeGameBtn');
+    const analysisContent = document.getElementById('analysisContent');
+    const toast = document.getElementById('toast');
+    const gameOverview = document.getElementById('gameOverview');
+    
+    // Kehren-Buttons (6 Kehren)
+    const massBtns = [];
+    const stockBtns = [];
+    const fehlBtns = [];
+    for (let k = 1; k <= MAX_KEHREN; k++) {
+      massBtns.push(document.getElementById('mass' + k));
+      stockBtns.push(document.getElementById('stock' + k));
+      fehlBtns.push(document.getElementById('fehl' + k));
+    }
+
+    // ========== INIT ==========
+    function initGameData() {
+      for (let g = 1; g <= MAX_GAMES; g++) {
+        if (!gameData[g]) gameData[g] = {};
+        for (let k = 1; k <= MAX_KEHREN; k++) {
+          if (!gameData[g][k]) {
+            gameData[g][k] = { mass: 0, stock: 0, fehl: 0 };
+          }
         }
+      }
+    }
+    initGameData();
 
-        function renderKehren(containerId, points, activeKehre) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            if (!points || !Array.isArray(points)) {
-                // Platzhalter für leere Kehren
-                for (let i = 0; i < 6; i++) {
-                    const row = document.createElement('div');
-                    row.className = 'kehre-row';
-                    row.innerHTML = `
-                        <span class="kehre-number">Kehre ${i + 1}</span>
-                        <span class="kehre-points">-</span>
-                    `;
-                    container.appendChild(row);
+    // ========== TOAST ==========
+    let toastTimeout;
+    function showToast(message, type = 'info') {
+      clearTimeout(toastTimeout);
+      toast.textContent = message;
+      toast.className = `toast ${type}`;
+      setTimeout(() => toast.classList.add('show'), 10);
+      toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // ========== DATEN FUNKTIONEN ==========
+    function getCurrentGameData() {
+      return gameData[currentGame] || {};
+    }
+
+    function getKehreData(kehre) {
+      const gData = getCurrentGameData();
+      if (!gData[kehre]) {
+        gData[kehre] = { mass: 0, stock: 0, fehl: 0 };
+      }
+      return gData[kehre];
+    }
+
+    function getGameStats(gameId) {
+      const gData = gameData[gameId] || {};
+      let mass = 0, stock = 0, fehl = 0;
+      for (let k = 1; k <= MAX_KEHREN; k++) {
+        const kData = gData[k] || { mass: 0, stock: 0, fehl: 0 };
+        mass += kData.mass || 0;
+        stock += kData.stock || 0;
+        fehl += kData.fehl || 0;
+      }
+      const total = mass + stock + fehl;
+      const rate = total > 0 ? Math.round(((mass + stock) / total) * 100) : 0;
+      return { mass, stock, fehl, total, rate };
+    }
+
+    function isGameCompleted(gameId) {
+      const stats = getGameStats(gameId);
+      return stats.total >= MAX_KEHREN;
+    }
+
+    function getTotalStats() {
+      let totalMass = 0, totalStock = 0, totalFehl = 0;
+      let totalShots = 0;
+      for (let g = 1; g <= MAX_GAMES; g++) {
+        const stats = getGameStats(g);
+        totalMass += stats.mass;
+        totalStock += stats.stock;
+        totalFehl += stats.fehl;
+        totalShots += stats.total;
+      }
+      const maxShots = MAX_GAMES * MAX_KEHREN;
+      return {
+        mass: totalMass,
+        stock: totalStock,
+        fehl: totalFehl,
+        total: totalShots,
+        maxShots: maxShots,
+        massPercent: maxShots > 0 ? Math.round((totalMass / maxShots) * 100) : 0,
+        stockPercent: maxShots > 0 ? Math.round((totalStock / maxShots) * 100) : 0,
+        fehlPercent: maxShots > 0 ? Math.round((totalFehl / maxShots) * 100) : 0,
+        rate: totalShots > 0 ? Math.round(((totalMass + totalStock) / totalShots) * 100) : 0,
+        completedGames: Object.keys(gameData).filter(g => isGameCompleted(g)).length
+      };
+    }
+
+    function updateGameOverview() {
+      let html = '';
+      for (let g = 1; g <= MAX_GAMES; g++) {
+        const stats = getGameStats(g);
+        const completed = isGameCompleted(g);
+        const active = g === currentGame;
+        
+        let classes = 'game-box';
+        if (active) classes += ' active';
+        if (completed) classes += ' completed';
+        
+        html += `
+          <div class="${classes}" onclick="document.getElementById('gameSelect').value=${g}; document.getElementById('gameSelect').dispatchEvent(new Event('change'));">
+            <div class="game-label">S${g}</div>
+            <div class="game-stats">M:${stats.mass} S:${stats.stock} F:${stats.fehl}</div>
+            <div class="game-rate">${stats.rate}%</div>
+            <div class="game-status">${completed ? '✅ Fertig' : (stats.total > 0 ? '⏳' : '◻️')}</div>
+          </div>
+        `;
+      }
+      gameOverview.innerHTML = html;
+    }
+
+    function updateButtons() {
+      for (let k = 0; k < MAX_KEHREN; k++) {
+        massBtns[k].classList.remove('active');
+        stockBtns[k].classList.remove('active');
+        fehlBtns[k].classList.remove('active');
+      }
+      
+      const gData = getCurrentGameData();
+      for (let k = 1; k <= MAX_KEHREN; k++) {
+        const kData = gData[k] || { mass: 0, stock: 0, fehl: 0 };
+        if (kData.mass > 0) massBtns[k-1].classList.add('active');
+        if (kData.stock > 0) stockBtns[k-1].classList.add('active');
+        if (kData.fehl > 0) fehlBtns[k-1].classList.add('active');
+      }
+      
+      updateGameOverview();
+    }
+
+    function toggleShot(kehre, type) {
+      const kData = getKehreData(kehre);
+      
+      if (kData[type] > 0) {
+        kData[type] = 0;
+      } else {
+        kData[type] = 1;
+        if (type === 'mass') { kData.stock = 0; kData.fehl = 0; }
+        else if (type === 'stock') { kData.mass = 0; kData.fehl = 0; }
+        else if (type === 'fehl') { kData.mass = 0; kData.stock = 0; }
+      }
+      
+      updateButtons();
+      saveToLocalStorageAuto();
+      
+      // Prüfen ob Spiel komplett ist
+      if (isGameCompleted(currentGame)) {
+        showToast('✅ Spiel ' + currentGame + ' abgeschlossen!', 'success');
+        updateAnalysis();
+      }
+    }
+
+    // ========== EVENT-LISTENER FÜR KEHREN-BUTTONS ==========
+    for (let k = 1; k <= MAX_KEHREN; k++) {
+      massBtns[k-1].addEventListener('click', function() { toggleShot(k, 'mass'); });
+      stockBtns[k-1].addEventListener('click', function() { toggleShot(k, 'stock'); });
+      fehlBtns[k-1].addEventListener('click', function() { toggleShot(k, 'fehl'); });
+    }
+
+    // ========== SPIEL AUSWAHL ==========
+    gameSelect.addEventListener('change', function() {
+      currentGame = parseInt(this.value);
+      updateButtons();
+      updateAnalysis();
+    });
+
+    // ========== SPIEL BEENDEN ==========
+    completeGameBtn.addEventListener('click', function() {
+      // Prüfen ob alle Kehren gespielt wurden
+      if (isGameCompleted(currentGame)) {
+        showToast('✅ Spiel ' + currentGame + ' ist bereits abgeschlossen!', 'info');
+        updateAnalysis();
+        return;
+      }
+      
+      // Ungespielte Kehren automatisch als Fehlschuss markieren
+      const gData = getCurrentGameData();
+      for (let k = 1; k <= MAX_KEHREN; k++) {
+        if (!gData[k]) gData[k] = { mass: 0, stock: 0, fehl: 0 };
+        if (gData[k].mass === 0 && gData[k].stock === 0 && gData[k].fehl === 0) {
+          gData[k].fehl = 1;
+        }
+      }
+      
+      updateButtons();
+      saveToLocalStorageAuto();
+      updateAnalysis();
+      showToast('✅ Spiel ' + currentGame + ' abgeschlossen!', 'success');
+    });
+
+    newGameBtn.addEventListener('click', function() {
+      const gData = getCurrentGameData();
+      for (let k = 1; k <= MAX_KEHREN; k++) {
+        gData[k] = { mass: 0, stock: 0, fehl: 0 };
+      }
+      updateButtons();
+      saveToLocalStorageAuto();
+      updateAnalysis();
+      showToast('✅ Neues Spiel gestartet (Spiel ' + currentGame + ')', 'success');
+    });
+
+    // ========== DATEN SAMMELN ==========
+    function collectAllData() {
+      const allGames = {};
+      for (let g = 1; g <= MAX_GAMES; g++) {
+        allGames[g] = {};
+        for (let k = 1; k <= MAX_KEHREN; k++) {
+          const kData = gameData[g]?.[k] || { mass: 0, stock: 0, fehl: 0 };
+          allGames[g][k] = { ...kData };
+        }
+      }
+      
+      return {
+        playerName: playerName.value.trim(),
+        sessionDate: sessionDate.value,
+        location: location.value.trim(),
+        temperature: temperature.value.trim(),
+        racket: racket.value,
+        gameType: gameType.value,
+        currentGame: currentGame,
+        games: allGames,
+        notes: notes.value.trim(),
+        timestamp: new Date().toISOString()
+      };
+    }
+
+    // ========== ANALYSE ==========
+    function renderAnalysis() {
+      const data = collectAllData();
+      const name = data.playerName || 'unbekannt';
+      const date = data.sessionDate;
+      const loc = data.location || '–';
+      const temp = data.temperature || '–';
+      const platte = data.racket || '–';
+      const stiel = data.gameType || '–';
+      
+      const total = getTotalStats();
+      const dateFormatted = formatDate(date);
+      
+      // Alle Spiele - kompakte Übersicht
+      let gamesHtml = '';
+      for (let g = 1; g <= MAX_GAMES; g++) {
+        const stats = getGameStats(g);
+        const completed = isGameCompleted(g);
+        const highlight = g === currentGame ? 'style="background:#d4edda;border:2px solid #28a745;"' : '';
+        const completedStyle = completed ? 'style="background:#fff8e1;border:2px solid #ffc107;"' : '';
+        const finalStyle = g === currentGame ? highlight : (completed ? completedStyle : '');
+        gamesHtml += `
+          <div class="game-box" ${finalStyle}>
+            <div class="game-label">S${g}</div>
+            <div class="game-stats">M:${stats.mass} S:${stats.stock} F:${stats.fehl}</div>
+            <div class="game-rate">${stats.rate}%</div>
+            <div class="game-status">${completed ? '✅' : (stats.total > 0 ? '⏳' : '◻️')}</div>
+          </div>
+        `;
+      }
+      
+      // Aktuelle Kehren-Details (nur für aktuelles Spiel, kompakt)
+      let kehrenHtml = '';
+      for (let k = 1; k <= MAX_KEHREN; k++) {
+        const kData = gameData[currentGame]?.[k] || { mass: 0, stock: 0, fehl: 0 };
+        let shot = '◻️';
+        if (kData.mass > 0) shot = '🎯';
+        else if (kData.stock > 0) shot = '🏒';
+        else if (kData.fehl > 0) shot = '❌';
+        kehrenHtml += `
+          <div style="text-align:center;font-size:0.7rem;padding:0.1rem;background:#f8fafc;border-radius:4px;">
+            <strong>K${k}</strong><br>${shot}
+          </div>
+        `;
+      }
+      
+      return `
+        <div class="info-row">
+          <div><span class="label-text">Spieler</span><strong>${name}</strong></div>
+          <div><span class="label-text">Datum</span><strong>${dateFormatted}</strong></div>
+          <div><span class="label-text">Ort</span><strong>${loc}</strong></div>
+          <div><span class="label-text">Temperatur</span><strong>${temp}</strong></div>
+        </div>
+        <div class="info-row">
+          <div><span class="label-text">Stockplatte</span><strong>${platte}</strong></div>
+          <div><span class="label-text">Stiel</span><strong>${stiel}</strong></div>
+          <div><span class="label-text">Abgeschlossene Spiele</span><strong>${total.completedGames}/${MAX_GAMES}</strong></div>
+          <div><span class="label-text">Gesamtquote</span><strong>${total.rate}%</strong></div>
+        </div>
+
+        <!-- GESAMTAUSWERTUNG -->
+        <div class="total-stats">
+          <div class="total-title">📊 GESAMTAUSWERTUNG (${MAX_GAMES} Spiele = ${MAX_GAMES * MAX_KEHREN} Schüsse = 100%)</div>
+          <div class="total-grid">
+            <div class="total-item highlight-green">
+              <div class="num">${total.massPercent}%</div>
+              <div class="desc">🎯 Maßschüsse</div>
+              <div style="font-size:0.55rem;color:#6c8ba8;">${total.mass} von ${total.maxShots}</div>
+            </div>
+            <div class="total-item highlight-blue">
+              <div class="num">${total.stockPercent}%</div>
+              <div class="desc">🏒 Stockschüsse</div>
+              <div style="font-size:0.55rem;color:#6c8ba8;">${total.stock} von ${total.maxShots}</div>
+            </div>
+            <div class="total-item highlight-red">
+              <div class="num">${total.fehlPercent}%</div>
+              <div class="desc">❌ Fehlschüsse</div>
+              <div style="font-size:0.55rem;color:#6c8ba8;">${total.fehl} von ${total.maxShots}</div>
+            </div>
+            <div class="total-item highlight-gold">
+              <div class="num">${total.rate}%</div>
+              <div class="desc">🏆 Trefferquote</div>
+              <div style="font-size:0.55rem;color:#6c8ba8;">${total.mass + total.stock} Treffer</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-weight:600; font-size:0.7rem; color:#1f4a6e; margin:0.4rem 0 0.2rem;">📊 Alle Spiele (1-12)</div>
+        <div class="game-overview" style="grid-template-columns: repeat(6, 1fr);">${gamesHtml}</div>
+
+        <div style="font-weight:600; font-size:0.7rem; color:#1f4a6e; margin:0.4rem 0 0.2rem;">📋 Aktuelles Spiel ${currentGame} - Kehren</div>
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:0.2rem;margin:0.2rem 0 0.4rem;">${kehrenHtml}</div>
+
+        <div style="margin-top:0.4rem;">
+          <div style="font-weight:500; font-size:0.7rem; color:#1e4d73;">📝 Anmerkungen</div>
+          <div class="note-preview ${!data.notes ? 'empty-note' : ''}">
+            ${data.notes || 'keine Notizen hinterlegt'}
+          </div>
+        </div>
+
+        <div style="margin-top:0.4rem; font-size:0.6rem; color:#6c8ba8;">
+          📅 ${new Date().toLocaleString('de-DE')}
+        </div>
+      `;
+    }
+
+    function updateAnalysis() {
+      analysisContent.innerHTML = renderAnalysis();
+      // Export-Buttons sichtbar halten
+      document.getElementById('exportButtons').style.display = 'flex';
+    }
+
+    // ========== HILFSFUNKTIONEN ==========
+    function formatDate(dateStr) {
+      if (!dateStr) return '–';
+      try {
+        const d = new Date(dateStr + 'T00:00:00');
+        return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      } catch {
+        return dateStr;
+      }
+    }
+
+    // ========== LOCAL STORAGE ==========
+    function saveToLocalStorageAuto() {
+      try {
+        const data = collectAllData();
+        localStorage.setItem('trainingDataStockschiessen12x6', JSON.stringify(data));
+      } catch (e) {
+        console.error('LocalStorage Fehler:', e);
+      }
+    }
+
+    function saveToLocalStorage() {
+      saveToLocalStorageAuto();
+      showToast('✅ Lokal gespeichert', 'success');
+    }
+
+    function loadFromLocalStorage() {
+      const saved = localStorage.getItem('trainingDataStockschiessen12x6');
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          playerName.value = data.playerName || '';
+          sessionDate.value = data.sessionDate || '';
+          location.value = data.location || '';
+          temperature.value = data.temperature || '';
+          racket.value = data.racket || 'Type 15L/43-46/Profil';
+          gameType.value = data.gameType || '22/A';
+          notes.value = data.notes || '';
+          currentGame = data.currentGame || 2;
+          
+          if (data.games) {
+            for (let g = 1; g <= MAX_GAMES; g++) {
+              if (data.games[g]) {
+                for (let k = 1; k <= MAX_KEHREN; k++) {
+                  if (data.games[g][k]) {
+                    gameData[g][k] = { ...data.games[g][k] };
+                  }
                 }
-                return;
+              }
+            }
+          }
+          
+          gameSelect.value = currentGame;
+          updateButtons();
+          updateAnalysis();
+          return true;
+        } catch (e) {
+          console.error('Ladefehler:', e);
+        }
+      }
+      return false;
+    }
+
+    // ========== CSV EXPORT ==========
+    function exportCSV() {
+      const data = collectAllData();
+      const name = data.playerName || 'unbekannt';
+      const date = data.sessionDate || new Date().toISOString().split('T')[0];
+      
+      let csv = 'Spiel,Kehre,Maßschuss,Stockschuss,Fehlschuss\n';
+      for (let g = 1; g <= MAX_GAMES; g++) {
+        for (let k = 1; k <= MAX_KEHREN; k++) {
+          const kData = data.games[g]?.[k] || { mass: 0, stock: 0, fehl: 0 };
+          csv += `${g},${k},${kData.mass || 0},${kData.stock || 0},${kData.fehl || 0}\n`;
+        }
+      }
+      
+      const total = getTotalStats();
+      csv += '\n--- GESAMTSTATISTIK ---\n';
+      csv += `Gesamtschüsse,${total.maxShots}\n`;
+      csv += `Maßschüsse,${total.mass},${total.massPercent}%\n`;
+      csv += `Stockschüsse,${total.stock},${total.stockPercent}%\n`;
+      csv += `Fehlschüsse,${total.fehl},${total.fehlPercent}%\n`;
+      csv += `Trefferquote,${total.rate}%\n`;
+      csv += `Abgeschlossene Spiele,${total.completedGames}/${MAX_GAMES}\n`;
+      
+      csv += '\n--- METADATEN ---\n';
+      csv += `Name,${data.playerName}\n`;
+      csv += `Datum,${data.sessionDate}\n`;
+      csv += `Ort,${data.location}\n`;
+      csv += `Temperatur,${data.temperature}\n`;
+      csv += `Stockplatte,${data.racket}\n`;
+      csv += `Stiel,${data.gameType}\n`;
+      csv += `Anmerkungen,${data.notes}\n`;
+      csv += `Exportiert,${new Date().toLocaleString('de-DE')}\n`;
+      
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `Training_${name}_${date}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+      
+      showToast('✅ CSV exportiert!', 'success');
+    }
+
+    // ========== CSV IMPORT ==========
+    function importCSV(file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const text = e.target.result;
+          const lines = text.split('\n').filter(line => line.trim());
+          
+          let isCSV = false;
+          let dataMode = 'data';
+          let newGameData = {};
+          for (let g = 1; g <= MAX_GAMES; g++) {
+            newGameData[g] = {};
+            for (let k = 1; k <= MAX_KEHREN; k++) {
+              newGameData[g][k] = { mass: 0, stock: 0, fehl: 0 };
+            }
+          }
+          
+          for (const line of lines) {
+            if (line.includes('--- GESAMTSTATISTIK ---') || line.includes('--- METADATEN ---')) {
+              dataMode = 'meta';
+              continue;
             }
             
-            points.forEach((point, index) => {
-                const row = document.createElement('div');
-                row.className = 'kehre-row';
-                if (activeKehre && (index + 1) === activeKehre) {
-                    row.classList.add('active');
-                }
-                row.innerHTML = `
-                    <span class="kehre-number">Kehre ${index + 1}</span>
-                    <span class="kehre-points">${point !== null && point !== undefined ? point : '-'}</span>
-                `;
-                container.appendChild(row);
-            });
-        }
-
-        // ===== DATENAKTUALISIERUNG =====
-        function updateFromJson() {
-            const input = document.getElementById('jsonInput');
-            try {
-                const data = JSON.parse(input.value);
-                
-                // Validierung
-                if (!data.pointsA || !data.pointsB) {
-                    throw new Error('Ungültige Datenstruktur');
-                }
-                
-                updateDisplay(data);
-                document.getElementById('offlineNote').style.display = 'none';
-                
-                // In LocalStorage speichern für Wiederherstellung
-                localStorage.setItem('esvViewerData', input.value);
-                
-            } catch (error) {
-                alert('Fehler beim Parsen der JSON-Daten: ' + error.message);
-                console.error('JSON Fehler:', error);
+            const parts = line.split(',');
+            if (parts.length >= 5 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+              const g = parseInt(parts[0]);
+              const k = parseInt(parts[1]);
+              if (g >= 1 && g <= MAX_GAMES && k >= 1 && k <= MAX_KEHREN) {
+                newGameData[g][k] = {
+                  mass: parseInt(parts[2]) || 0,
+                  stock: parseInt(parts[3]) || 0,
+                  fehl: parseInt(parts[4]) || 0
+                };
+                isCSV = true;
+              }
+            } else if (dataMode === 'meta' && parts.length >= 2) {
+              const key = parts[0].trim();
+              const value = parts.slice(1).join(',').trim();
+              if (key === 'Name') playerName.value = value;
+              else if (key === 'Datum') sessionDate.value = value;
+              else if (key === 'Ort') location.value = value;
+              else if (key === 'Temperatur') temperature.value = value;
+              else if (key === 'Stockplatte') racket.value = value;
+              else if (key === 'Stiel') gameType.value = value;
+              else if (key === 'Anmerkungen') notes.value = value;
             }
+          }
+          
+          if (isCSV) {
+            gameData = newGameData;
+            initGameData();
+            updateButtons();
+            saveToLocalStorageAuto();
+            updateAnalysis();
+            showToast('✅ CSV importiert!', 'success');
+          } else {
+            showToast('❌ Kein gültiges CSV-Format', 'error');
+          }
+        } catch (error) {
+          showToast('❌ Fehler beim Import', 'error');
+          console.error(error);
         }
+      };
+      reader.readAsText(file);
+    }
 
-        function pasteFromClipboard() {
-            navigator.clipboard.readText().then(text => {
-                document.getElementById('jsonInput').value = text;
-                // Automatisch aktualisieren
-                updateFromJson();
-            }).catch(() => {
-                alert('Bitte fügen Sie die Daten manuell ein (Strg+V)');
-            });
+    // ========== PDF EXPORT ==========
+    function exportPDF() {
+      updateAnalysis();
+      showToast('📄 PDF wird erstellt...', 'info');
+      setTimeout(() => {
+        window.print();
+        setTimeout(() => showToast('📄 PDF-Export gestartet', 'success'), 500);
+      }, 400);
+    }
+
+    // ========== RESET / CLEAR ==========
+    const defaultData = {
+      playerName: 'Roland Koll',
+      sessionDate: '2026-07-20',
+      location: 'ESV Grein',
+      temperature: '24°C',
+      racket: 'Type 15L/43-46/Profil',
+      gameType: '22/A',
+      notes: '.'
+    };
+
+    function setDefaultValues() {
+      playerName.value = defaultData.playerName;
+      sessionDate.value = defaultData.sessionDate;
+      location.value = defaultData.location;
+      temperature.value = defaultData.temperature;
+      racket.value = defaultData.racket;
+      gameType.value = defaultData.gameType;
+      notes.value = defaultData.notes;
+      
+      for (let g = 1; g <= MAX_GAMES; g++) {
+        for (let k = 1; k <= MAX_KEHREN; k++) {
+          gameData[g][k] = { mass: 0, stock: 0, fehl: 0 };
         }
+      }
+      currentGame = 2;
+      gameSelect.value = currentGame;
+      updateButtons();
+      updateAnalysis();
+    }
 
-        function loadDemoData() {
-            const demoData = {
-                pointsA: [3, 2, 1, 4, 2, 0],
-                pointsB: [1, 3, 4, 2, 3, 5],
-                scoreA: 12,
-                scoreB: 18,
-                winsA: 1,
-                winsB: 2,
-                activeKehre: 4,
-                winner: '',
-                timestamp: new Date().toISOString()
-            };
-            
-            document.getElementById('jsonInput').value = JSON.stringify(demoData, null, 2);
-            updateDisplay(demoData);
-            localStorage.setItem('esvViewerData', JSON.stringify(demoData, null, 2));
+    function clearAllFields() {
+      playerName.value = '';
+      sessionDate.value = '';
+      location.value = '';
+      temperature.value = '';
+      racket.value = 'Type 16/39/41/Glatt';
+      gameType.value = '20/A';
+      notes.value = '';
+      
+      for (let g = 1; g <= MAX_GAMES; g++) {
+        for (let k = 1; k <= MAX_KEHREN; k++) {
+          gameData[g][k] = { mass: 0, stock: 0, fehl: 0 };
         }
+      }
+      currentGame = 1;
+      gameSelect.value = currentGame;
+      updateButtons();
+      updateAnalysis();
+      showToast('🧹 Felder geleert', 'info');
+    }
 
-        function clearData() {
-            document.getElementById('jsonInput').value = '';
-            const emptyData = {
-                pointsA: Array(6).fill(null),
-                pointsB: Array(6).fill(null),
-                scoreA: 0,
-                scoreB: 0,
-                winsA: 0,
-                winsB: 0,
-                activeKehre: null,
-                winner: '',
-                timestamp: new Date().toISOString()
-            };
-            updateDisplay(emptyData);
-            localStorage.removeItem('esvViewerData');
+    // ========== EVENT-LISTENER ==========
+    saveLocalBtn.addEventListener('click', saveToLocalStorage);
+    saveCsvBtn.addEventListener('click', exportCSV);
+    pdfExportBtn.addEventListener('click', exportPDF);
+    
+    importBtn.addEventListener('change', function(e) {
+      if (this.files && this.files[0]) {
+        importCSV(this.files[0]);
+        this.value = '';
+      }
+    });
+
+    resetBtn.addEventListener('click', function() {
+      if (confirm('Gespeicherte Daten löschen?')) {
+        localStorage.removeItem('trainingDataStockschiessen12x6');
+        setDefaultValues();
+        showToast('↺ Zurückgesetzt', 'info');
+      } else {
+        setDefaultValues();
+        showToast('↺ Standardwerte geladen', 'info');
+      }
+    });
+
+    clearBtn.addEventListener('click', function() {
+      clearAllFields();
+    });
+
+    // ========== INITIALISIERUNG ==========
+    window.addEventListener('load', function() {
+      const hasSaved = loadFromLocalStorage();
+      if (!hasSaved) {
+        setDefaultValues();
+      }
+      updateButtons();
+      updateAnalysis();
+    });
+
+    // Automatisches Speichern bei Änderungen
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+      el.addEventListener('change', function() {
+        if (this.id !== 'gameSelect') {
+          saveToLocalStorageAuto();
         }
+      });
+    });
 
-        // ===== AUTO-UPDATE VON URL =====
-        function loadDataFromUrl() {
-            if (!dataUrl) return;
-            
-            fetch(dataUrl)
-                .then(response => response.json())
-                .then(data => {
-                    updateDisplay(data);
-                    document.getElementById('jsonInput').value = JSON.stringify(data, null, 2);
-                    document.getElementById('offlineNote').style.display = 'none';
-                })
-                .catch(error => {
-                    console.error('Fehler beim Laden von URL:', error);
-                    document.getElementById('offlineNote').style.display = 'block';
-                });
-        }
-
-        // ===== LOCALSTORAGE WIEDERHERSTELLEN =====
-        function loadFromLocalStorage() {
-            const saved = localStorage.getItem('esvViewerData');
-            if (saved) {
-                try {
-                    const data = JSON.parse(saved);
-                    document.getElementById('jsonInput').value = saved;
-                    updateDisplay(data);
-                } catch (e) {
-                    console.error('Fehler beim Laden aus LocalStorage:', e);
-                }
-            }
-        }
-
-        // ===== INITIALISIERUNG =====
-        if (autoUpdate && dataUrl) {
-            // Auto-Update Modus
-            loadDataFromUrl();
-            setInterval(loadDataFromUrl, 3000);
-        } else {
-            // Manueller Modus
-            loadFromLocalStorage();
-            
-            // Wenn keine Daten, Demo laden
-            if (!currentData) {
-                loadDemoData();
-            }
-        }
-
-        // ===== TASTATURKÜRZEL =====
-        document.addEventListener('keydown', (e) => {
-            // Strg+Enter zum Aktualisieren
-            if (e.ctrlKey && e.key === 'Enter') {
-                e.preventDefault();
-                updateFromJson();
-            }
-        });
-
-        // ===== SERVICE WORKER FÜR OFFLINE =====
-        if ('serviceWorker' in navigator) {
-            // Optional: PWA-Funktionalität
-        }
-
-        console.log('🏒 ESV Grein Zuschauer-Monitor geladen');
-        console.log('📋 Fügen Sie JSON-Daten ein oder verwenden Sie die Demo-Daten');
-    </script>
+  })();
+</script>
 </body>
 </html>
