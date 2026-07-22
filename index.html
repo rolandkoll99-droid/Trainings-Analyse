@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESV Grein - Zuschauer-Monitor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #0d1f13, #17351f);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .viewer-container {
+            background: white;
+            border-radius: 30px;
+            padding: 25px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            color: #1f5e3a;
+            font-size: 1.8rem;
+        }
+        .header .subtitle {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .live-badge {
+            display: inline-block;
+            background: #ff4444;
+            color: white;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            animation: blink 1s infinite;
+            margin-left: 10px;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .scoreboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .score-card {
+            background: #f7faf5;
+            border-radius: 18px;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 8px solid #1f5e3a;
+        }
+        .score-card.red {
+            border-bottom-color: #b93a32;
+        }
+        .team-name {
+            font-size: 1.1rem;
+            font-weight: 900;
+        }
+        .team-score {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: #1f5e3a;
+        }
+        .score-card.red .team-score {
+            color: #b93a32;
+        }
+        .team-wins {
+            background: #102417;
+            color: white;
+            padding: 4px 14px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 1rem;
+        }
+        .kehren-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .kehren-column {
+            background: #f0f5ee;
+            border-radius: 15px;
+            padding: 12px;
+        }
+        .kehren-title {
+            text-align: center;
+            font-weight: 900;
+            margin-bottom: 8px;
+            color: #1f5e3a;
+            font-size: 0.9rem;
+        }
+        .kehre-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+            background: white;
+            margin-bottom: 4px;
+            border-radius: 6px;
+            border: 2px solid #d7e4cf;
+            font-size: 0.9rem;
+        }
+        .kehre-row.active {
+            border-color: #4caf50;
+            background: #f3fff2;
+        }
+        .kehre-number {
+            font-weight: 700;
+            color: #555;
+        }
+        .kehre-points {
+            font-weight: 900;
+            font-size: 1rem;
+        }
+        .status {
+            text-align: center;
+            margin-top: 15px;
+            padding: 12px;
+            background: #fff8e1;
+            border-radius: 12px;
+            font-weight: 700;
+            color: #e65100;
+        }
+        .status.winner {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 15px;
+            color: #999;
+            font-size: 0.75rem;
+        }
+        .update-info {
+            text-align: center;
+            color: #999;
+            font-size: 0.7rem;
+            margin-top: 5px;
+        }
+        .data-input-area {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 12px;
+            border: 2px dashed #ccc;
+        }
+        .data-input-area textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            min-height: 80px;
+            resize: vertical;
+        }
+        .data-input-area .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .data-input-area button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s;
+            min-width: 100px;
+        }
+        .data-input-area button:active {
+            transform: scale(0.95);
+        }
+        .btn-update {
+            background: #1f5e3a;
+            color: white;
+        }
+        .btn-paste {
+            background: #2196F3;
+            color: white;
+        }
+        .btn-clear {
+            background: #f44336;
+            color: white;
+        }
+        .btn-demo {
+            background: #ff9800;
+            color: white;
+        }
+        .offline-note {
+            background: #ffebee;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            text-align: center;
+            color: #c62828;
+            display: none;
+        }
+        @media (max-width: 600px) {
+            .scoreboard {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .kehren-grid {
+                grid-template-columns: 1fr;
+            }
+            .team-score {
+                font-size: 2.8rem;
+            }
+            .viewer-container {
+                padding: 15px;
+            }
+            .header h1 {
+                font-size: 1.4rem;
+            }
+            .data-input-area textarea {
+                min-height: 60px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="viewer-container">
+        <div class="header">
+            <h1>🥌 ESV Grein Training <span class="live-badge">LIVE</span></h1>
+            <p class="subtitle">Zuschauer-Monitor • Version 2.0</p>
+        </div>
+
+        <div class="scoreboard">
+            <div class="score-card">
+                <div class="team-name">⚪ Mannschaft W</div>
+                <div class="team-score" id="scoreA">0</div>
+                <div class="team-wins">🏆 <span id="winsA">0</span></div>
+            </div>
+            <div class="score-card red">
+                <div class="team-name">🔴 Mannschaft E</div>
+                <div class="team-score" id="scoreB">0</div>
+                <div class="team-wins">🏆 <span id="winsB">0</span></div>
+            </div>
+        </div>
+
+        <div class="kehren-grid">
+            <div class="kehren-column">
+                <div class="kehren-title">⚪ Mannschaft W</div>
+                <div id="kehrenA"></div>
+            </div>
+            <div class="kehren-column">
+                <div class="kehren-title">🔴 Mannschaft E</div>
+                <div id="kehrenB"></div>
+            </div>
+        </div>
+
+        <div class="status" id="status">⏳ Warte auf Spielstart...</div>
+        <div class="offline-note" id="offlineNote">
+            ⚠️ Verbindung zum Hauptgerät verloren
+        </div>
+        
+        <!-- Daten-Eingabebereich für manuelle Updates -->
+        <div class="data-input-area">
+            <p style="font-weight:700;color:#333;margin-bottom:8px;">📊 Daten aktualisieren</p>
+            <textarea id="jsonInput" placeholder="Fügen Sie hier die JSON-Daten ein..."></textarea>
+            <div class="button-group">
+                <button class="btn-paste" onclick="pasteFromClipboard()">📋 Einfügen</button>
+                <button class="btn-update" onclick="updateFromJson()">🔄 Aktualisieren</button>
+                <button class="btn-demo" onclick="loadDemoData()">📊 Demo</button>
+                <button class="btn-clear" onclick="clearData()">🗑️ Leeren</button>
+            </div>
+            <p style="font-size:0.7rem;color:#999;margin-top:5px;">
+                Tipp: Kopieren Sie die JSON-Daten vom Hauptgerät und fügen Sie sie hier ein
+            </p>
+        </div>
+        
+        <div class="update-info" id="updateInfo">Letzte Aktualisierung: -</div>
+        <div class="footer">ESV Grein • Zuschauer-Monitor • GitHub Pages</div>
+    </div>
+
+    <script>
+        // ===== STATE =====
+        let currentData = null;
+        let updateCount = 0;
+        let autoUpdateInterval = null;
+
+        // ===== URL-Parameter für Auto-Update =====
+        const urlParams = new URLSearchParams(window.location.search);
+        const autoUpdate = urlParams.get('auto') === 'true';
+        const dataUrl = urlParams.get('data');
+
+        // ===== FUNKTIONEN =====
+        function updateDisplay(data) {
+            if (!data) return;
+            
+            currentData = data;
+            
+            // Scoreboard
+            document.getElementById('scoreA').textContent = data.scoreA || 0;
+            document.getElementById('scoreB').textContent = data.scoreB || 0;
+            document.getElementById('winsA').textContent = data.winsA || 0;
+            document.getElementById('winsB').textContent = data.winsB || 0;
+
+            // Kehren
+            renderKehren('kehrenA', data.pointsA, data.activeKehre);
+            renderKehren('kehrenB', data.pointsB, data.activeKehre);
+
+            // Status
+            const statusEl = document.getElementById('status');
+            if (data.winner) {
+                statusEl.textContent = `🏆 ${data.winner} gewinnt das Training!`;
+                statusEl.className = 'status winner';
+            } else if (data.activeKehre) {
+                statusEl.textContent = `🔄 Aktuelle Kehre: ${data.activeKehre}`;
+                statusEl.className = 'status';
+            } else {
+                statusEl.textContent = '⏳ Warte auf Spielstart...';
+                statusEl.className = 'status';
+            }
+
+            // Update Info
+            document.getElementById('updateInfo').textContent = 
+                `Letzte Aktualisierung: ${new Date().toLocaleTimeString()} (${++updateCount}. Update)`;
+            
+            // Offline-Note ausblenden
+            document.getElementById('offlineNote').style.display = 'none';
+        }
+
+        function renderKehren(containerId, points, activeKehre) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            if (!points || !Array.isArray(points)) {
+                // Platzhalter für leere Kehren
+                for (let i = 0; i < 6; i++) {
+                    const row = document.createElement('div');
+                    row.className = 'kehre-row';
+                    row.innerHTML = `
+                        <span class="kehre-number">Kehre ${i + 1}</span>
+                        <span class="kehre-points">-</span>
+                    `;
+                    container.appendChild(row);
+                }
+                return;
+            }
+            
+            points.forEach((point, index) => {
+                const row = document.createElement('div');
+                row.className = 'kehre-row';
+                if (activeKehre && (index + 1) === activeKehre) {
+                    row.classList.add('active');
+                }
+                row.innerHTML = `
+                    <span class="kehre-number">Kehre ${index + 1}</span>
+                    <span class="kehre-points">${point !== null && point !== undefined ? point : '-'}</span>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // ===== DATENAKTUALISIERUNG =====
+        function updateFromJson() {
+            const input = document.getElementById('jsonInput');
+            try {
+                const data = JSON.parse(input.value);
+                
+                // Validierung
+                if (!data.pointsA || !data.pointsB) {
+                    throw new Error('Ungültige Datenstruktur');
+                }
+                
+                updateDisplay(data);
+                document.getElementById('offlineNote').style.display = 'none';
+                
+                // In LocalStorage speichern für Wiederherstellung
+                localStorage.setItem('esvViewerData', input.value);
+                
+            } catch (error) {
+                alert('Fehler beim Parsen der JSON-Daten: ' + error.message);
+                console.error('JSON Fehler:', error);
+            }
+        }
+
+        function pasteFromClipboard() {
+            navigator.clipboard.readText().then(text => {
+                document.getElementById('jsonInput').value = text;
+                // Automatisch aktualisieren
+                updateFromJson();
+            }).catch(() => {
+                alert('Bitte fügen Sie die Daten manuell ein (Strg+V)');
+            });
+        }
+
+        function loadDemoData() {
+            const demoData = {
+                pointsA: [3, 2, 1, 4, 2, 0],
+                pointsB: [1, 3, 4, 2, 3, 5],
+                scoreA: 12,
+                scoreB: 18,
+                winsA: 1,
+                winsB: 2,
+                activeKehre: 4,
+                winner: '',
+                timestamp: new Date().toISOString()
+            };
+            
+            document.getElementById('jsonInput').value = JSON.stringify(demoData, null, 2);
+            updateDisplay(demoData);
+            localStorage.setItem('esvViewerData', JSON.stringify(demoData, null, 2));
+        }
+
+        function clearData() {
+            document.getElementById('jsonInput').value = '';
+            const emptyData = {
+                pointsA: Array(6).fill(null),
+                pointsB: Array(6).fill(null),
+                scoreA: 0,
+                scoreB: 0,
+                winsA: 0,
+                winsB: 0,
+                activeKehre: null,
+                winner: '',
+                timestamp: new Date().toISOString()
+            };
+            updateDisplay(emptyData);
+            localStorage.removeItem('esvViewerData');
+        }
+
+        // ===== AUTO-UPDATE VON URL =====
+        function loadDataFromUrl() {
+            if (!dataUrl) return;
+            
+            fetch(dataUrl)
+                .then(response => response.json())
+                .then(data => {
+                    updateDisplay(data);
+                    document.getElementById('jsonInput').value = JSON.stringify(data, null, 2);
+                    document.getElementById('offlineNote').style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Fehler beim Laden von URL:', error);
+                    document.getElementById('offlineNote').style.display = 'block';
+                });
+        }
+
+        // ===== LOCALSTORAGE WIEDERHERSTELLEN =====
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('esvViewerData');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    document.getElementById('jsonInput').value = saved;
+                    updateDisplay(data);
+                } catch (e) {
+                    console.error('Fehler beim Laden aus LocalStorage:', e);
+                }
+            }
+        }
+
+        // ===== INITIALISIERUNG =====
+        if (autoUpdate && dataUrl) {
+            // Auto-Update Modus
+            loadDataFromUrl();
+            setInterval(loadDataFromUrl, 3000);
+        } else {
+            // Manueller Modus
+            loadFromLocalStorage();
+            
+            // Wenn keine Daten, Demo laden
+            if (!currentData) {
+                loadDemoData();
+            }
+        }
+
+        // ===== TASTATURKÜRZEL =====
+        document.addEventListener('keydown', (e) => {
+            // Strg+Enter zum Aktualisieren
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                updateFromJson();
+            }
+        });
+
+        // ===== SERVICE WORKER FÜR OFFLINE =====
+        if ('serviceWorker' in navigator) {
+            // Optional: PWA-Funktionalität
+        }
+
+        console.log('🏒 ESV Grein Zuschauer-Monitor geladen');
+        console.log('📋 Fügen Sie JSON-Daten ein oder verwenden Sie die Demo-Daten');
+    </script>
+</body>
+</html>
