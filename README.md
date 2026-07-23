@@ -1,2 +1,2 @@
-# esv-grein-viewer
-ESV Grein Zuschauer Monitor
+# esv-grein-Trainings Auswertung/Analyse
+für Tablet und Smartphone
