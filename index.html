@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Trainingsanalyse – Trainingsportal ESV Grein</title>
+
+    <!-- PWA: installierbar auf Android/iOS über "Zum Startbildschirm hinzufügen" -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0a0e14">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Trainingsanalyse">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <style>
         /* ============================================================
            BASIS-STYLES
@@ -25,7 +35,7 @@
             -webkit-tap-highlight-color: transparent;
         }
         body {
-            background: #0a0a0a;
+            background: #f0f4f9;
             min-height: 100vh;
             padding: 0.5rem;
             display: flex;
@@ -747,18 +757,200 @@
                 scroll-behavior: auto !important;
             }
         }
-    </style>
+
+/* ============================================================
+   ESV GREIN MODERN UI V3
+   Optimiert für PC / Tablet / Raspberry Pi
+   ============================================================ */
+:root{
+  --ui-bg:#eef3f8;
+  --ui-surface:#ffffff;
+  --ui-surface-2:#f7f9fc;
+  --ui-text:#10253a;
+  --ui-muted:#64788c;
+  --ui-line:#dbe5ee;
+  --ui-primary:#0b5d87;
+  --ui-primary-2:#0f789f;
+  --ui-accent:#19a7c8;
+  --ui-success:#18a66a;
+  --ui-danger:#dc4654;
+  --ui-warning:#d89a16;
+  --ui-shadow:0 12px 35px rgba(16,37,58,.10);
+  --ui-radius:18px;
+}
+html,body{min-height:100%;background:linear-gradient(135deg,#edf3f8 0%,#f7fafc 55%,#e9f1f7 100%)}
+body{padding:18px 14px 28px;color:var(--ui-text)}
+.topbar{max-width:1240px;margin:0 auto 12px;font-size:.78rem}
+.topbar a{color:var(--ui-primary);font-weight:700}
+.topbar .logout{border:1px solid var(--ui-line);background:rgba(255,255,255,.8);color:var(--ui-muted);border-radius:999px;padding:7px 14px;font-weight:700}
+.card{max-width:1240px;padding:0;background:var(--ui-surface);border:1px solid rgba(11,93,135,.08);border-radius:24px;box-shadow:var(--ui-shadow);overflow:hidden}
+.header{
+  position:relative;padding:22px 24px 18px;border-bottom:1px solid var(--ui-line);
+  background:linear-gradient(135deg,#082f49 0%,#0b5d87 58%,#1290aa 100%);
+  color:#fff;
+}
+.header:after{
+  content:"";position:absolute;right:-80px;top:-110px;width:270px;height:270px;border-radius:50%;
+  background:rgba(255,255,255,.08);pointer-events:none;
+}
+.header h1{color:#fff;font-size:1.55rem;letter-spacing:-.03em}
+.header small{position:relative;z-index:1;background:rgba(255,255,255,.13);color:#eaf7fb;border:1px solid rgba(255,255,255,.18);padding:6px 10px}
+.status-badge.online{background:rgba(37,211,137,.18);color:#bff8df}
+.status-badge.offline{background:rgba(255,100,110,.18);color:#ffd5d8}
+.status-badge.waiting{background:rgba(255,210,80,.18);color:#fff0b0}
+.tabs{
+  position:sticky;top:0;z-index:20;margin:0;padding:8px 12px;
+  background:rgba(248,251,253,.94);border-bottom:1px solid var(--ui-line);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);gap:6px
+}
+.tab-btn{
+  min-height:42px;border-radius:12px;color:#60788d;font-size:.78rem;font-weight:800;
+  border:1px solid transparent;transition:none
+}
+.tab-btn.active{
+  color:#fff;background:linear-gradient(135deg,var(--ui-primary),var(--ui-primary-2));
+  box-shadow:0 5px 15px rgba(11,93,135,.22)
+}
+.tab-btn:active{transform:none}
+.tab-content{padding:18px 22px 24px;animation:none}
+.section-title{
+  color:var(--ui-text);font-size:1rem;font-weight:850;margin:0 0 10px;padding-top:4px
+}
+.section-title:first-child{margin-top:0}
+.section-title .badge{
+  background:#e8f4f9;color:var(--ui-primary);border:1px solid #d4eaf2;font-weight:800
+}
+.field-group{gap:5px;margin-bottom:9px}
+.field-group label,.config-item label,.eingabe-box .eingabe-grid label{
+  color:#48677f;font-size:.68rem;font-weight:850;letter-spacing:.45px
+}
+.field-group input,.field-group select,.field-group textarea,
+.config-item input,.config-item select{
+  border:1px solid var(--ui-line);background:var(--ui-surface-2);border-radius:11px;
+  min-height:42px;color:var(--ui-text);box-shadow:inset 0 1px 0 rgba(255,255,255,.8)
+}
+.field-group input:focus,.field-group select:focus,.field-group textarea:focus{
+  border-color:var(--ui-accent);box-shadow:0 0 0 3px rgba(25,167,200,.12);background:#fff
+}
+.spieler-select-wrapper{
+  background:var(--ui-surface-2);border:1px solid var(--ui-line);border-radius:14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
+}
+.spieler-select-wrapper select{
+  border:1px solid var(--ui-line);background:#fff;border-radius:11px;color:var(--ui-text);
+}
+.spieler-select-wrapper select:focus{
+  border-color:var(--ui-accent);box-shadow:0 0 0 3px rgba(25,167,200,.12);
+}
+.spieler-list{gap:7px}
+.spieler-tag{
+  padding:7px 12px;border-radius:10px;background:#eef6fa;color:var(--ui-primary);
+  border:1px solid #d7e8f0;font-weight:800
+}
+.spieler-tag.active{background:#e8f8f0;border-color:#8fd8b5;color:#138052}
+.uebung-card,.detail-card,.stat-card,.trainer-card{
+  border:1px solid var(--ui-line);box-shadow:0 4px 14px rgba(16,37,58,.045);background:#fff
+}
+.uebung-card{border-radius:16px;padding:14px;margin-bottom:12px}
+.uebung-card.active{border-color:#72c4dc;background:#f5fbfd;box-shadow:0 6px 18px rgba(11,93,135,.07)}
+.uebung-title{color:var(--ui-text)!important}
+.uebung-stats span{border-color:var(--ui-line);font-weight:800}
+.eingabe-box{border:1px solid #9bd5e5;border-radius:14px;background:#fbfeff;box-shadow:0 5px 18px rgba(11,93,135,.05)}
+.eingabe-box .eingabe-header .aktueller-versuch{color:var(--ui-primary)}
+.eingabe-box .eingabe-grid select,.eingabe-box .eingabe-grid input{
+  border:1px solid var(--ui-line);background:#fff;min-height:40px
+}
+.training-buttons{gap:8px}
+.training-buttons .btn{min-height:48px;border-radius:12px}
+.training-buttons .btn-mass{background:linear-gradient(135deg,#14875c,#19aa73);border:0}
+.training-buttons .btn-stock{background:linear-gradient(135deg,#086da0,#1299b6);border:0}
+.btn{
+  min-height:40px;border-radius:11px;border:1px solid var(--ui-line);font-weight:800;
+  box-shadow:none;transition:none
+}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--ui-primary);border-color:var(--ui-primary)}
+.btn-success{background:var(--ui-success);border-color:var(--ui-success)}
+.btn-danger{background:var(--ui-danger);border-color:var(--ui-danger)}
+.btn-warning{background:#e3a72a;border-color:#e3a72a}
+.btn-excel{background:#24794a;border-color:#24794a}
+.btn-outline{background:#fff;color:var(--ui-primary)}
+.btn-start-training{
+  border-radius:14px;background:linear-gradient(135deg,#11996b,#19b982);
+  box-shadow:0 9px 22px rgba(24,166,106,.22);min-height:58px
+}
+.versuche-grid{gap:6px}
+.versuch-btn{
+  min-height:68px;border:1px solid var(--ui-line);border-radius:12px;background:#fff;
+  box-shadow:0 2px 7px rgba(16,37,58,.04)
+}
+.versuch-btn.active{border-color:var(--ui-primary);box-shadow:0 0 0 2px rgba(11,93,135,.12)}
+.analysis-grid{gap:10px}
+.stat-card{border-radius:15px;padding:14px}
+.stat-card .stat-value{color:var(--ui-text)}
+.stat-card.green .stat-value{color:var(--ui-success)}
+.stat-card.blue .stat-value{color:#1683c5}
+.stat-card.gold .stat-value{color:#c28a10}
+.stat-card.red .stat-value{color:var(--ui-danger)}
+.detail-grid{gap:10px}
+.detail-card{padding:14px;border-radius:15px}
+.history-list{border:1px solid var(--ui-line);border-radius:14px;overflow:auto;background:#fff}
+.history-item{padding:11px 13px;border-bottom:1px solid #edf2f6}
+.history-item:hover{background:#f6fafc}
+.ring-legend{padding:8px 0}
+.ring-legend-item{background:#fff;border-color:var(--ui-line);padding:5px 8px;border-radius:8px}
+.config-grid{background:#f5f8fb;border:1px solid var(--ui-line);border-radius:15px;padding:12px}
+.video-placeholder{border-color:#c8d9e5;background:#f6f9fb}
+.toast{bottom:22px;border-radius:12px;padding:10px 16px;font-weight:800}
+@media (min-width:1000px){
+  .tab-content{padding-left:28px;padding-right:28px}
+}
+@media (max-width:768px){
+  body{padding:8px}
+  .card{border-radius:18px}
+  .header{padding:17px 16px 14px}
+  .header h1{font-size:1.25rem}
+  .tabs{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab-btn{flex:0 0 auto;min-width:104px}
+  .tab-content{padding:14px 12px 20px}
+}
+@media (max-width:520px){
+  .topbar{padding:0 2px}
+  .tab-btn{min-width:92px;font-size:.7rem}
+  .analysis-grid{gap:6px}
+  .stat-card{padding:10px 7px}
+  .stat-card .stat-value{font-size:1.35rem}
+  .versuche-grid{grid-template-columns:repeat(5,1fr)}
+}
+@media print{
+  .header{background:#fff;color:#111;border-bottom:1px solid #bbb}
+  .header h1{color:#111}
+  .tabs{display:none!important}
+  .tab-content{padding:8px}
+}
+
+
+/* V3.1 modern tablet / Raspberry Pi UI */
+:root{--v31-navy:#102a43;--v31-blue:#1677ff;--v31-line:#dbe5ef;--v31-muted:#66788a}
+body{background:radial-gradient(circle at 10% 0%,rgba(22,119,255,.08),transparent 28%),linear-gradient(180deg,#eef4f9,#f7f9fc)}
+#app{border:1px solid rgba(16,42,67,.06);box-shadow:0 12px 40px rgba(16,42,67,.10)}
+.tabs{position:sticky;top:6px;z-index:30;backdrop-filter:blur(12px);background:rgba(241,246,251,.94);border:1px solid var(--v31-line);box-shadow:0 5px 18px rgba(16,42,67,.06)}
+.tab-btn{min-height:48px;font-weight:750}.btn{min-height:44px}.field-group input,.field-group select,.field-group textarea{min-height:44px}.eingabe-box,.uebung-card{box-shadow:0 7px 22px rgba(16,42,67,.06)}.versuch-btn{min-height:72px}
+@media(max-width:768px){.v31-kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:430px){.v31-kpi{padding:9px}.v31-kpi strong{font-size:1.2rem}.v31-player{font-size:1rem}}
+</style>
 </head>
 <body class="pi-performance">
 
 <div class="topbar">
-    <a href="dashboard.html">&larr; Zurück zum Dashboard</a>
-    <button class="logout" onclick="logout(); return false;">Abmelden</button>
+    <span>ESV Grein</span>
+    <button class="logout" id="installAppBtn" style="display:none;" onclick="installApp(); return false;">📲 App installieren</button>
 </div>
 
 <div class="card" id="app">
     <div class="header">
-        <h1>Trainingsanalyse V2.4.0</h1>
+        <h1>Trainingsanalyse V2.4.1</h1>
         <small>IndexedDB · <span id="connectionStatus" class="status-badge online">● Online</span></small>
     </div>
 
@@ -773,30 +965,13 @@
 
     <!-- TAB: SPIELER -->
     <div class="tab-content active" id="tab-player">
-        <div class="section-title">👤 Spielerauswahl <span class="badge" id="playerCountBadge">0 Spieler</span></div>
-        
-        <!-- Dropdown für Spielerauswahl -->
-        <div class="spieler-select-wrapper">
-            <label style="font-size:0.75rem; font-weight:600; color:#1f4a6e; text-transform:uppercase; letter-spacing:0.3px; display:block; margin-bottom:0.3rem;">Spieler auswählen</label>
-            <select id="playerSelect">
-                <option value="">– Bitte Spieler wählen –</option>
-            </select>
-        </div>
-        
-        <div style="display:flex; gap:0.3rem; margin-top:0.3rem; flex-wrap:wrap;">
-            <button class="btn btn-primary btn-sm" id="refreshPlayerBtn">🔄 Aktualisieren</button>
-            <button class="btn btn-excel btn-sm" id="openPlayerManagerBtn">📋 Spieler verwalten</button>
-            <button class="btn btn-success btn-sm" id="loadSelectedPlayerBtn">📂 Ausgewählten laden</button>
-        </div>
-        
+        <div class="section-title">👤 Spieler</div>
+
         <div class="grid-2" style="margin-top:0.5rem;">
-            <div class="field-group">
-                <label>Spieler-ID</label>
-                <input type="text" id="playerId" placeholder="z.B. SP-001" readonly style="background:#e8eff5;">
-            </div>
+            <input type="hidden" id="playerId" value="">
             <div class="field-group">
                 <label>Spielername</label>
-                <input type="text" id="playerName" placeholder="Name" readonly style="background:#e8eff5;">
+                <input type="text" id="playerName" placeholder="Name eingeben">
             </div>
         </div>
         
@@ -1116,51 +1291,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
 </script>
-<script src="auth.js"></script>
 <script>
-requireGate();
-requireLogin();
-// ============================================================
-// SPIELERLISTE AUS ZENTRALER VERWALTUNG
-// ============================================================
-const PLAYER_STORAGE_KEY = 'esv_grein_spielerliste';
-
-function loadCentralPlayerList() {
-    try {
-        const data = localStorage.getItem(PLAYER_STORAGE_KEY);
-        if (data) {
-            const parsed = JSON.parse(data);
-            if (Array.isArray(parsed) && parsed.length) {
-                return parsed;
-            }
-        }
-    } catch (e) {}
-    // Fallback: Standard-Liste aus Excel
-    return [
-        { id: 'SP-001', name: 'Andreas Hinterkörner', verein: 'ESV Grein' },
-        { id: 'SP-002', name: 'Peter Tischler', verein: 'ESV Grein' },
-        { id: 'SP-003', name: 'Ernst Aigen', verein: 'ESV Grein' },
-        { id: 'SP-004', name: 'Mario Leimhofer', verein: 'ESV Grein' },
-        { id: 'SP-005', name: 'Johann Kronsteiner', verein: 'ESV Grein' },
-        { id: 'SP-006', name: 'Roland Koll', verein: 'ESV Grein' },
-        { id: 'SP-007', name: 'Sabine Pils', verein: 'ESV Grein' },
-        { id: 'SP-008', name: 'Irmgard Kronsteiner', verein: 'ESV Grein' },
-        { id: 'SP-009', name: 'Willibald Scheiber', verein: 'ESV Grein' },
-        { id: 'SP-010', name: 'Martin Nothnagl', verein: 'ESV Grein' },
-        { id: 'SP-011', name: 'Rupert Lehbrunner', verein: 'ESV Grein' },
-        { id: 'SP-012', name: 'Sebastian Wimhofer', verein: 'ESV Grein' },
-        { id: 'SP-013', name: 'Sandra Wimhofer', verein: 'ESV Grein' },
-        { id: 'SP-014', name: 'Heidi Tischler', verein: 'ESV Grein' },
-        { id: 'SP-015', name: 'Pierre Sperl', verein: 'ESV Grein' },
-        { id: 'SP-016', name: 'Theresia Rathgeb', verein: 'ESV Grein' },
-        { id: 'SP-017', name: 'Maria Radinger', verein: 'ESV Grein' },
-        { id: 'SP-018', name: 'Franz Pichlmayr', verein: 'ESV Grein' },
-        { id: 'SP-019', name: 'Friedrich Nösterer', verein: 'ESV Grein' },
-        { id: 'SP-020', name: 'Herbert Hinterkörner', verein: 'ESV Grein' },
-        { id: 'SP-021', name: 'Stefan Aichinger', verein: 'ESV Grein' },
-        { id: 'SP-022', name: 'Walter Gstöttmaier', verein: 'ESV Grein' }
-    ];
-}
 
 // ============================================================
 // PUNKTESYSTEM
@@ -1244,12 +1375,12 @@ async function deleteTrainingFromDB(id) {
 // ============================================================
 // HILFSFUNKTIONEN
 // ============================================================
-function logout() {
-    if (confirm('Wirklich abmelden?')) {
-        showToast('👋 Abgemeldet. Daten bleiben erhalten.', 'info');
-        window.location.href = 'login.html';
-    }
-    return false;
+function slugifyPlayerName(name) {
+    const base = String(name || '').trim().toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-+|-+$)/g, '');
+    return 'SP-' + (base || 'spieler');
 }
 
 function generateTrainingId() {
@@ -1352,86 +1483,6 @@ function berechnePunkte(versuch) {
 function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
-
-// ============================================================
-// SPIELER-AUSWAHL (Dropdown)
-// ============================================================
-let centralPlayers = loadCentralPlayerList();
-
-function renderCentralPlayerList() {
-    const select = document.getElementById('playerSelect');
-    const currentId = document.getElementById('playerId').value.trim() || '';
-    
-    select.innerHTML = '<option value="">– Bitte Spieler wählen –</option>';
-    
-    centralPlayers.forEach(p => {
-        const option = document.createElement('option');
-        option.value = p.id;
-        option.textContent = p.name + (p.verein ? ' (' + p.verein + ')' : '');
-        if (p.id === currentId) {
-            option.selected = true;
-        }
-        select.appendChild(option);
-    });
-    
-    document.getElementById('playerCountBadge').textContent = centralPlayers.length + ' Spieler';
-}
-
-// Dropdown-Change
-document.getElementById('playerSelect').addEventListener('change', function() {
-    const selectedId = this.value;
-    if (selectedId) {
-        const player = centralPlayers.find(p => p.id === selectedId);
-        if (player) {
-            document.getElementById('playerId').value = player.id;
-            document.getElementById('playerName').value = player.name;
-            trainingData.playerId = player.id;
-            trainingData.playerName = player.name;
-            showToast('👤 ' + player.name + ' ausgewählt', 'info');
-            scheduleLocalSave();
-        }
-    } else {
-        document.getElementById('playerId').value = '';
-        document.getElementById('playerName').value = '';
-        trainingData.playerId = '';
-        trainingData.playerName = '';
-    }
-});
-
-function loadSelectedPlayer() {
-    const select = document.getElementById('playerSelect');
-    const selectedId = select.value;
-    if (selectedId) {
-        const player = centralPlayers.find(p => p.id === selectedId);
-        if (player) {
-            document.getElementById('playerId').value = player.id;
-            document.getElementById('playerName').value = player.name;
-            trainingData.playerId = player.id;
-            trainingData.playerName = player.name;
-            renderCentralPlayerList();
-            showToast('✅ ' + player.name + ' geladen', 'success');
-            scheduleLocalSave();
-        }
-    } else {
-        showToast('⚠️ Bitte einen Spieler auswählen', 'error');
-    }
-}
-
-function refreshPlayerList() {
-    centralPlayers = loadCentralPlayerList();
-    renderCentralPlayerList();
-    const count = centralPlayers.length;
-    showToast('🔄 Spielerliste aktualisiert (' + count + ' Spieler)', 'success');
-}
-
-function openPlayerManager() {
-    window.open('02_Spielerverwaltung', '_blank');
-    showToast('📋 Spielerverwaltung geöffnet. Nach Änderungen bitte "Aktualisieren" klicken.', 'info');
-}
-
-document.getElementById('refreshPlayerBtn').addEventListener('click', refreshPlayerList);
-document.getElementById('openPlayerManagerBtn').addEventListener('click', openPlayerManager);
-document.getElementById('loadSelectedPlayerBtn').addEventListener('click', loadSelectedPlayer);
 
 // ============================================================
 // DOM-REFERENZEN
@@ -1633,14 +1684,14 @@ function loadSticksFromLocal() {
 function startTraining() {
     const name = playerNameInput.value.trim();
     if (!name) {
-        showToast('⚠️ Bitte zuerst einen Spieler auswählen!', 'error');
+        showToast('⚠️ Bitte zuerst einen Namen eingeben!', 'error');
         return;
     }
-    if (!playerIdInput.value.trim()) {
-        const newId = 'SP-' + String(Date.now()).slice(-5);
-        playerIdInput.value = newId;
-        trainingData.playerId = newId;
-    }
+    // Stabile ID aus dem Namen ableiten, damit Historie/Auswertung für denselben
+    // Namen immer dieselben gespeicherten Trainings findet (keine zentrale Verwaltung mehr).
+    const stableId = slugifyPlayerName(name);
+    playerIdInput.value = stableId;
+    trainingData.playerId = stableId;
     trainingData.playerName = name;
     trainingData.datum = sessionDateInput.value || new Date().toISOString().slice(0,10);
     trainingData.beginn = trainingStartInput.value || new Date().toTimeString().slice(0,5);
@@ -2703,7 +2754,6 @@ window.loadHistoryTraining = async function(index) {
                 updateAnalysis();
                 updateTrainerAnalysis();
                 updateHistory();
-                renderCentralPlayerList();
                 showToast('✅ Historisches Training geladen!', 'success');
                 scheduleLocalSave();
             }
@@ -2921,7 +2971,6 @@ function resetAll() {
     updateAnalysis();
     updateTrainerAnalysis();
     updateHistory();
-    renderCentralPlayerList();
     showToast('↺ Training zurückgesetzt', 'info');
 }
 
@@ -2955,7 +3004,6 @@ function clearAll() {
     updateAnalysis();
     updateTrainerAnalysis();
     updateHistory();
-    renderCentralPlayerList();
     showToast('🧹 Felder geleert und gespeichert', 'info');
 }
 
@@ -3049,7 +3097,6 @@ function importCSV(file) {
             updateAnalysis();
             updateTrainerAnalysis();
             updateHistory();
-            renderCentralPlayerList();
             scheduleLocalSave();
             showToast('✅ CSV importiert!', 'success');
         } catch (error) {
@@ -3171,12 +3218,6 @@ window.addEventListener('load', async function() {
     loadSticksFromLocal();
     setDateTime();
 
-    // Zentrale Spielerliste laden
-    centralPlayers = loadCentralPlayerList();
-    renderCentralPlayerList();
-
-    // Kein automatischer Select, Dropdown bleibt leer
-
     // Gespeichertes Training laden
     const playerId = playerIdInput.value.trim();
     if (playerId) {
@@ -3209,13 +3250,50 @@ window.addEventListener('load', async function() {
     updateTrainerAnalysis();
     await updateHistory();
 
-    showToast('🚀 Trainingsanalyse V2.4.0 geladen – Spieler aus Dropdown wählen!', 'info');
+    showToast('🚀 Trainingsanalyse V2.4.1 geladen!', 'info');
 });
 
 window.addEventListener('pagehide', () => {
     clearTimeout(saveTimer);
     saveToLocalStorageAuto();
 }, { passive: true });
+
+// ============================================================
+// PWA: SERVICE WORKER & INSTALL-PROMPT
+// ============================================================
+if ('serviceWorker' in navigator) {
+    // Direkt registrieren (dieses Skript läuft ohnehin erst ganz am Ende des Dokuments) –
+    // ein zusätzlicher 'load'-Listener würde ggf. nie feuern, falls 'load' bereits vorbei ist.
+    navigator.serviceWorker.register('sw.js').catch((err) => {
+        console.warn('Service Worker Registrierung fehlgeschlagen:', err);
+    });
+}
+
+let deferredInstallPrompt = null;
+const installAppBtn = document.getElementById('installAppBtn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if (installAppBtn) installAppBtn.style.display = 'inline-block';
+});
+
+window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    if (installAppBtn) installAppBtn.style.display = 'none';
+    showToast('✅ App wurde installiert!', 'success');
+});
+
+async function installApp() {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    if (outcome === 'accepted') {
+        showToast('📲 App wird installiert…', 'info');
+    }
+    deferredInstallPrompt = null;
+    if (installAppBtn) installAppBtn.style.display = 'none';
+}
 </script>
 
 </body>
